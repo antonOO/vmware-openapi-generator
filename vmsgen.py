@@ -26,11 +26,12 @@ GENERATE_METAMODEL = False
 API_SERVER_HOST = '<vcenter>'
 TAG_SEPARATOR = '/'
 SPECIFICATION = '3'
+MIXED = False
 
 
 def main():
     # Get user input.
-    metadata_api_url, rest_navigation_url, output_dir, verify, enable_filtering, GENERATE_METAMODEL, SPECIFICATION, GENERATE_UNIQUE_OP_IDS, TAG_SEPARATOR = connection.get_input_params()
+    metadata_api_url, rest_navigation_url, output_dir, verify, enable_filtering, GENERATE_METAMODEL, SPECIFICATION, GENERATE_UNIQUE_OP_IDS, TAG_SEPARATOR, MIXED = connection.get_input_params()
     # Maps enumeration id to enumeration info
     enumeration_dict = {}
     # Maps structure_id to structure_info
