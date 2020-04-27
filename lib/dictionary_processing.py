@@ -101,10 +101,6 @@ def add_service_urls_using_metamodel(
     package_dict_api = {}
     package_dict = {}
 
-    all_rest_services = []
-    for i in service_urls_map:
-        all_rest_services.append(service_urls_map[i][0])
-
     rest_services = {}
     for k, v in service_urls_map.items():
         rest_services.update({
@@ -112,7 +108,6 @@ def add_service_urls_using_metamodel(
         })
 
     for service in service_dict:
-        # if service not in all_rest_services:
         check, path_list = get_paths_inside_metamodel(service, service_dict)
         if check:
             for path in path_list:
