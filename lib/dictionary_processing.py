@@ -96,7 +96,8 @@ def get_all_services_urls(components_urls, verify):
 def add_service_urls_using_metamodel(
         service_urls_map,
         service_dict,
-        rest_navigation_url):
+        rest_navigation_url,
+        mixed=False):
 
     package_dict_api = {}
     package_dict = {}
@@ -108,7 +109,7 @@ def add_service_urls_using_metamodel(
         })
 
     for service in service_dict:
-        check, path_list = get_paths_inside_metamodel(service, service_dict)
+        check, path_list = get_paths_inside_metamodel(service, service_dict, mixed)
         if check:
             for path in path_list:
                 service_urls_map[path] = (service, '/api')
@@ -134,7 +135,7 @@ def add_service_urls_using_metamodel(
     return package_dict_api, package_dict
 
 
-def get_paths_inside_metamodel(service, service_dict):
+def get_paths_inside_metamodel(service, service_dict, mixed=False):
     path_list = set()
     for operation_id in service_dict[service].operations.keys():
         for request in service_dict[service].operations[operation_id].metadata.keys(
@@ -142,6 +143,9 @@ def get_paths_inside_metamodel(service, service_dict):
             if request.lower() in ('post', 'put', 'patch', 'get', 'delete'):
                 path_list.add(
                     service_dict[service].operations[operation_id].metadata[request].elements['path'].string_value)
+                # Check whether the service contains both @RequestMapping and @Verb annotations
+                if mixed and 'RequestMapping' in service_dict[service].operations[operation_id].metadata.keys():
+                    print("Service contains @VERB and old annotations.")
 
     if path_list == set():
         return False, []

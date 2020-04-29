@@ -15,71 +15,85 @@ class TestInputs(unittest.TestCase):
         test_args = ['vmsgen', '-vc', 'v_url']
         ssl_verify_expected = True
         with mock.patch('sys.argv', test_args):
-            _, _, _, ssl_verify_actual, _, _, _, _, _, = connection.get_input_params()
+            _, _, _, ssl_verify_actual, _, _, _, _, _, _, = connection.get_input_params()
         self.assertEqual(ssl_verify_expected, ssl_verify_actual)
 
         # case 1.2: SSL is insecure
         test_args = ['vmsgen', '-vc', 'v_url', '-k']
         ssl_verify_expected = False
         with mock.patch('sys.argv', test_args):
-            _, _, _, ssl_verify_actual, _, _, _, _, _, = connection.get_input_params()
+            _, _, _, ssl_verify_actual, _, _, _, _, _, _, = connection.get_input_params()
         self.assertEqual(ssl_verify_expected, ssl_verify_actual)
 
         # case 2.1: tag separator option (default)
         test_args = ['vmsgen', '-vc', 'v_url', '-k']
         tag_separator_expected = '/'
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, _, _, _, tag_separator_actual = connection.get_input_params()
+            _, _, _, _, _, _, _, _, tag_separator_actual, _, = connection.get_input_params()
         self.assertEqual(tag_separator_expected, tag_separator_actual)
 
         # case 2.2: tag separator option
         expected = '_'
         test_args = ['vmsgen', '-vc', 'v_url', '-s', expected]
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, _, _, _, tag_separator_actual = connection.get_input_params()
+            _, _, _, _, _, _, _, _, tag_separator_actual, _, = connection.get_input_params()
         self.assertEqual(expected, tag_separator_actual)
 
         # case 3.1: operation id option is FALSE
         test_args = ['vmsgen', '-vc', 'v_url', '-k']
         generate_op_id_expected = False
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, _, _, generate_op_id_actual, _, = connection.get_input_params()
+            _, _, _, _, _, _, _, generate_op_id_actual, _, _, = connection.get_input_params()
         self.assertEqual(generate_op_id_expected, generate_op_id_actual)
 
         # case 3.1: operation id option is TRUE
         test_args = ['vmsgen', '-vc', 'v_url', '-k', '-uo']
         generate_op_id_expected = True
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, _, _, generate_op_id_actual, _, = connection.get_input_params()
+            _, _, _, _, _, _, _, generate_op_id_actual, _, _, = connection.get_input_params()
         self.assertEqual(generate_op_id_expected, generate_op_id_actual)
 
         # case 4.1: generate metamodel option is FALSE
         test_args = ['vmsgen', '-vc', 'v_url', '-k']
         generate_metamodel_expected = False
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, generate_metamodel_actual, _, _, _, = connection.get_input_params()
+            _, _, _, _, _, generate_metamodel_actual, _, _, _, _, = connection.get_input_params()
         self.assertEqual(generate_metamodel_expected, generate_metamodel_actual)
 
         # case 4.1: generate metamodel option is TRUE
         test_args = ['vmsgen', '-vc', 'v_url', '-k', '-c']
         generate_metamodel_expected = True
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, generate_metamodel_actual, _, _, _, = connection.get_input_params()
+            _, _, _, _, _, generate_metamodel_actual, _, _, _, _, = connection.get_input_params()
         self.assertEqual(generate_metamodel_expected, generate_metamodel_actual)
         
         # case 5.1: swagger specification is default i.e openAPI 3.0
         test_args = ['vmsgen', '-vc', 'v_url', '-k']
         swagger_specification_expected = '3'
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, _, swagger_specification_actual, _, _, = connection.get_input_params()
+            _, _, _, _, _, _, swagger_specification_actual, _, _, _, = connection.get_input_params()
         self.assertEqual(swagger_specification_expected, swagger_specification_actual)
 
         # case 5.2: swagger specification is swagger 2.0
         test_args = ['vmsgen', '-vc', 'v_url', '-k', '-oas' , '2']
         swagger_specification_expected = '2'
         with mock.patch('sys.argv', test_args):
-            _, _, _, _, _, _, swagger_specification_actual, _, _, = connection.get_input_params()
+            _, _, _, _, _, _, swagger_specification_actual, _, _, _, = connection.get_input_params()
         self.assertEqual(swagger_specification_expected, swagger_specification_actual)
+
+        # case 6.1: mixed option is TRUE
+        test_args = ['vmsgen', '-vc', 'v_url', '-k', '-mixed']
+        mixed_expected = True
+        with mock.patch('sys.argv', test_args):
+            _, _, _, _, _, _, _, _, _, mixed_actual = connection.get_input_params()
+        self.assertEqual(mixed_expected, mixed_actual)
+
+        # case 6.1: mixed option is FALSE
+        test_args = ['vmsgen', '-vc', 'v_url', '-k']
+        mixed_expected = False
+        with mock.patch('sys.argv', test_args):
+            _, _, _, _, _, _, _, _, _, mixed_actual = connection.get_input_params()
+        self.assertEqual(mixed_expected, mixed_actual)
 
 
 class TestDictionaryProcessing(unittest.TestCase):

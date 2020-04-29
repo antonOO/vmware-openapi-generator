@@ -67,7 +67,7 @@ def main():
     
     # package_dict_api holds list of all service urls which come under /api
     package_dict_api, package_dict = dict_processing.add_service_urls_using_metamodel(
-        service_urls_map, service_dict, rest_navigation_url)
+        service_urls_map, service_dict, rest_navigation_url, MIXED)
 
     rest = RestUrlProcessing()
     api = ApiUrlProcessing()

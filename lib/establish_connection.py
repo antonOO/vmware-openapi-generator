@@ -68,7 +68,10 @@ def get_input_params():
     parser.add_argument(
         '-mixed',
         '--mixed',
-        default='False',
+        required=False,
+        nargs='?',
+        const=True,
+        default=False,
         help='api and rest rendering, with rest being deprecated')
     parser.set_defaults(filtering=False)
     args = parser.parse_args()
@@ -112,11 +115,7 @@ def get_input_params():
     SPECIFICATION = args.oas
 
     global MIXED
-    MIXED = False
-    if args.mixed.lower() in ["true", "1"]:
-        MIXED = True
-    elif args.mixed.lower() not in ["false", "0"]:
-        raise Exception(" Invalid usage of 'mixed' argument - please, supply boolean. ")
+    MIXED = args.mixed
 
     return metadata_url, rest_navigation_url, output_dir, verify, enable_filtering, GENERATE_METAMODEL, SPECIFICATION, GENERATE_UNIQUE_OP_IDS, TAG_SEPARATOR, MIXED
 
