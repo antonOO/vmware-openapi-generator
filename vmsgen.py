@@ -64,10 +64,17 @@ def main():
             rest_navigation_url, verify)
 
     http_error_map = utils.HttpErrorMap(component_svc)
-    
-    # package_dict_api holds list of all service urls which come under /api
-    package_dict_api, package_dict = dict_processing.add_service_urls_using_metamodel(
-        service_urls_map, service_dict, rest_navigation_url, MIXED)
+
+    if MIXED:
+        # package_dict_api holds list of all service urls which come under /api
+        # package_dict_deprecated holds a list of all service urls which come under /rest, but are
+        # deprecated with /api
+        package_dict_api, package_dict, package_dict_deprecated = dict_processing.add_service_urls_using_metamodel(
+            service_urls_map, service_dict, rest_navigation_url, MIXED)
+    else:
+        # package_dict_api holds list of all service urls which come under /api
+        package_dict_api, package_dict = dict_processing.add_service_urls_using_metamodel(
+            service_urls_map, service_dict, rest_navigation_url, MIXED)
 
     rest = RestUrlProcessing()
     api = ApiUrlProcessing()

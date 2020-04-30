@@ -4,7 +4,12 @@ import requests
 import six
 from six.moves import http_client
 from lib import utils
+from enum import Enum
 
+class ServiceType:
+    REST = 1
+    API = 2
+    MIXED = 3
 
 def populate_dicts(
         component_svc,
@@ -101,6 +106,7 @@ def add_service_urls_using_metamodel(
 
     package_dict_api = {}
     package_dict = {}
+    package_dict_deprecated = {}
 
     rest_services = {}
     for k, v in service_urls_map.items():
@@ -109,8 +115,8 @@ def add_service_urls_using_metamodel(
         })
 
     for service in service_dict:
-        check, path_list = get_paths_inside_metamodel(service, service_dict, mixed)
-        if check:
+        service_type, path_list = get_paths_inside_metamodel(service, service_dict, mixed)
+        if service_type == ServiceType.API or service_type == ServiceType.MIXED:
             for path in path_list:
                 service_urls_map[path] = (service, '/api')
                 package_name = path.split('/')[1]
@@ -118,7 +124,7 @@ def add_service_urls_using_metamodel(
                 if pack_arr == []:
                     package_dict_api[package_name] = pack_arr
                 pack_arr.append(path)
-        else:
+        elif service_type == ServiceType.REST:
             service_url = rest_services.get(service, None)
             if service_url is not None:
                 service_path = get_service_path_from_service_url(
@@ -131,26 +137,49 @@ def add_service_urls_using_metamodel(
                 else:
                     package_dict.setdefault(package, [service_path])
             else:
-                print("Service doesnot belong to either /api or /rest ", service)
+                print("Service does not belong to either /api or /rest ", service)
+        if service_type == ServiceType.MIXED:
+            service_url = rest_services.get(service, None)
+            if service_url is not None:
+                service_path = get_service_path_from_service_url(
+                    service_url, rest_navigation_url)
+                service_urls_map[service_path] = (service, '/mixed')
+                package = service_path.split('/')[3]
+                if package in package_dict_deprecated:
+                    packages = package_dict_deprecated[package]
+                    packages.append(service_path)
+                else:
+                    package_dict_deprecated.setdefault(package, [service_path])
+            else:
+                print("Service does not belong to either /api or /rest ", service)
+    if mixed:
+        return package_dict_api, package_dict, package_dict_deprecated
+
     return package_dict_api, package_dict
+
 
 
 def get_paths_inside_metamodel(service, service_dict, mixed=False):
     path_list = set()
+    is_mixed = False
     for operation_id in service_dict[service].operations.keys():
         for request in service_dict[service].operations[operation_id].metadata.keys(
         ):
             if request.lower() in ('post', 'put', 'patch', 'get', 'delete'):
                 path_list.add(
                     service_dict[service].operations[operation_id].metadata[request].elements['path'].string_value)
+
                 # Check whether the service contains both @RequestMapping and @Verb annotations
                 if mixed and 'RequestMapping' in service_dict[service].operations[operation_id].metadata.keys():
-                    print("Service contains @VERB and old annotations.")
+                    is_mixed = True
 
     if path_list == set():
-        return False, []
+        return ServiceType.REST, []
 
-    return True, sorted(list(path_list))
+    if is_mixed:
+        return ServiceType.MIXED, sorted(list(path_list))
+
+    return ServiceType.API, sorted(list(path_list))
 
 
 def get_service_path_from_service_url(service_url, base_url):

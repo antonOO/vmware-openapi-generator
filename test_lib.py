@@ -4,6 +4,7 @@ import vmsgen
 from lib import utils
 from lib import establish_connection as connection
 from lib import dictionary_processing as dict_processing
+from lib.dictionary_processing import ServiceType
 from lib.path_processing import PathProcessing
 from lib.url_processing import UrlProcessing
 from lib.type_handler_common import TypeHandlerCommon
@@ -148,7 +149,7 @@ class TestDictionaryProcessing(unittest.TestCase):
         bool_value_expected = False
         path_list_expected = []
         bool_value_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict)
-        self.assertEqual(bool_value_expected, bool_value_actual)
+        self.assertEqual(ServiceType.REST, bool_value_actual)
         self.assertEqual(path_list_expected, path_list_actual)
 
         #case 2: https methods ('put', 'post', 'patch', 'get', 'delete') in metadata.keys
@@ -185,8 +186,10 @@ class TestDictionaryProcessing(unittest.TestCase):
         bool_value_expected = True
         path_list_expected = ['mock_string_value']
         bool_value_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict)
-        self.assertEqual(bool_value_expected, bool_value_actual)
+        self.assertEqual(ServiceType.API, bool_value_actual)
         self.assertEqual(path_list_expected, path_list_actual)
+
+        #TODO add tests for ServiceType.MIXED
 
     def test_add_service_urls_using_metamodel(self):
         #case 1: checking for package_dict_api{}
@@ -222,6 +225,8 @@ class TestDictionaryProcessing(unittest.TestCase):
         package_dict_expected = {'package': ['/vmware/com/package/mock']}
         _, package_dict_actual = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_url)
         self.assertEqual(package_dict_expected, package_dict_actual)
+
+
 
     def test_objectTodict(self):
         # case 1: object is of type interger
