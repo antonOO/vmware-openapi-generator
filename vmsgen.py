@@ -69,7 +69,8 @@ def main():
         # package_dict_api holds list of all service urls which come under /api
         # package_dict_deprecated holds a list of all service urls which come under /rest, but are
         # deprecated with /api
-        package_dict_api, package_dict, package_dict_deprecated = dict_processing.add_service_urls_using_metamodel(
+        # replacement_map contains information about the deprecated /rest to /api mappings
+        package_dict_api, package_dict, package_dict_deprecated, replacement_map = dict_processing.add_service_urls_using_metamodel(
             service_urls_map, service_dict, rest_navigation_url, MIXED)
     else:
         # package_dict_api holds list of all service urls which come under /api
@@ -80,6 +81,26 @@ def main():
     api = ApiUrlProcessing()
 
     threads = []
+    for package, service_urls in six.iteritems(package_dict_deprecated):
+        worker = threading.Thread(
+            target=rest.process_service_urls,
+            args=(
+                package,
+                service_urls,
+                output_dir,
+                structure_dict,
+                enumeration_dict,
+                service_dict,
+                service_urls_map,
+                http_error_map,
+                rest_navigation_url,
+                enable_filtering,
+                SPECIFICATION,
+                GENERATE_UNIQUE_OP_IDS))
+        worker.daemon = True
+        worker.start()
+        threads.append(worker)
+
     for package, service_urls in six.iteritems(package_dict):
         worker = threading.Thread(
             target=rest.process_service_urls,

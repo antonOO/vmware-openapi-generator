@@ -107,6 +107,12 @@ def add_service_urls_using_metamodel(
     package_dict_api = {}
     package_dict = {}
     package_dict_deprecated = {}
+    '''
+    The replacement navigation map is used when MIXED specification is issued (@VERB + an old annotation standard)
+    It contains mappings to url paths, served as replacements. The structure of the map is the following: 
+    service -> operation -> method -> raplacement path
+    '''
+    replacement_map = {}
 
     rest_services = {}
     for k, v in service_urls_map.items():
@@ -115,7 +121,7 @@ def add_service_urls_using_metamodel(
         })
 
     for service in service_dict:
-        service_type, path_list = get_paths_inside_metamodel(service, service_dict, mixed)
+        service_type, path_list = get_paths_inside_metamodel(service, service_dict, mixed, replacement_map)
         if service_type == ServiceType.API or service_type == ServiceType.MIXED:
             for path in path_list:
                 service_urls_map[path] = (service, '/api')
@@ -153,25 +159,26 @@ def add_service_urls_using_metamodel(
             else:
                 print("Service does not belong to either /api or /rest ", service)
     if mixed:
-        return package_dict_api, package_dict, package_dict_deprecated
+        return package_dict_api, package_dict, package_dict_deprecated, replacement_map
 
     return package_dict_api, package_dict
 
 
 
-def get_paths_inside_metamodel(service, service_dict, mixed=False):
+def get_paths_inside_metamodel(service, service_dict, mixed=False, replacement_map={}):
     path_list = set()
     is_mixed = False
     for operation_id in service_dict[service].operations.keys():
         for request in service_dict[service].operations[operation_id].metadata.keys(
         ):
             if request.lower() in ('post', 'put', 'patch', 'get', 'delete'):
-                path_list.add(
-                    service_dict[service].operations[operation_id].metadata[request].elements['path'].string_value)
+                path = service_dict[service].operations[operation_id].metadata[request].elements['path'].string_value
+                path_list.add(path)
 
                 # Check whether the service contains both @RequestMapping and @Verb annotations
                 if mixed and 'RequestMapping' in service_dict[service].operations[operation_id].metadata.keys():
                     is_mixed = True
+                    add_replcament_path(service, operation_id, request.lower(), path, replacement_map)
 
     if path_list == set():
         return ServiceType.REST, []
@@ -187,3 +194,11 @@ def get_service_path_from_service_url(service_url, base_url):
         return service_url
 
     return service_url[len(base_url):]
+
+def add_replcament_path(service, operation_id, method, path, replacement_map):
+    if service not in replacement_map:
+        replacement_map[service] = {operation_id: {method: path}}
+    elif operation_id not in replacement_map[service]:
+        replacement_map[service][operation_id] = {method: path}
+    else:
+        replacement_map[service][operation_id][method] = path
