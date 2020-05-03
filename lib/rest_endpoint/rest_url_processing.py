@@ -2,6 +2,7 @@ import os
 import six
 from lib import utils
 from lib.url_processing import UrlProcessing
+from . import deprecation_handler
 from .oas3.rest_metamodel2openapi import RestMetamodel2Openapi
 from .swagger2.rest_metamodel2swagger import RestMetamodel2Swagger
 from .oas3.rest_openapi_final_path_processing import RestOpenapiPathProcessing
@@ -30,7 +31,8 @@ class RestUrlProcessing(UrlProcessing):
             rest_navigation_url,
             enable_filtering,
             spec,
-            gen_unique_op_id):
+            gen_unique_op_id,
+            deprecation_handler=None):
 
         print('processing package ' + package_name + os.linesep)
         type_dict = {}
@@ -76,6 +78,9 @@ class RestUrlProcessing(UrlProcessing):
                             operation_id,
                             http_error_map,
                             enable_filtering)
+
+                    if deprecation_handler is not None:
+                        deprecation_handler.add_deprecation_information(path, package_name, service_name)
 
                     path_list.append(path)
                 continue

@@ -18,6 +18,9 @@ import timeit
 import warnings
 import requests
 import six
+
+from lib.rest_endpoint.deprecation_handler import DeprecationHandler
+
 warnings.filterwarnings("ignore")
 
 
@@ -72,6 +75,8 @@ def main():
         # replacement_map contains information about the deprecated /rest to /api mappings
         package_dict_api, package_dict, package_dict_deprecated, replacement_map = dict_processing.add_service_urls_using_metamodel(
             service_urls_map, service_dict, rest_navigation_url, MIXED)
+
+        deprecation_handler = DeprecationHandler(replacement_map)
     else:
         # package_dict_api holds list of all service urls which come under /api
         package_dict_api, package_dict = dict_processing.add_service_urls_using_metamodel(
@@ -96,7 +101,8 @@ def main():
                 rest_navigation_url,
                 enable_filtering,
                 SPECIFICATION,
-                GENERATE_UNIQUE_OP_IDS))
+                GENERATE_UNIQUE_OP_IDS,
+                deprecation_handler))
         worker.daemon = True
         worker.start()
         threads.append(worker)
