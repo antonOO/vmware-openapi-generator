@@ -37,6 +37,9 @@ class RestUrlProcessing(UrlProcessing):
         print('processing package ' + package_name + os.linesep)
         type_dict = {}
         path_list = []
+        # File naming switch
+        deprecated = False
+
         for service_url in service_urls:
             service_name, service_end_point = service_url_dict.get(
                 service_url, None)
@@ -81,7 +84,7 @@ class RestUrlProcessing(UrlProcessing):
 
                     if deprecation_handler is not None:
                         deprecation_handler.add_deprecation_information(path, package_name, service_name)
-
+                        deprecated = True
                     path_list.append(path)
                 continue
             # use rest navigation service to get the REST mappings for a
@@ -151,14 +154,16 @@ class RestUrlProcessing(UrlProcessing):
                 type_dict,
                 output_dir,
                 package_name,
-                gen_unique_op_id)
+                gen_unique_op_id,
+                deprecated)
         if spec == '3':
             rest_openapi_fpp.process_output(
                 path_dict,
                 type_dict,
                 output_dir,
                 package_name,
-                gen_unique_op_id)
+                gen_unique_op_id,
+                deprecated)
 
     def contains_rm_annotation(self, service_info):
         for operation in service_info.operations.values():

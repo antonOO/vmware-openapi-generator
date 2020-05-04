@@ -68,6 +68,7 @@ def main():
 
     http_error_map = utils.HttpErrorMap(component_svc)
 
+    deprecation_handler = None
     if MIXED:
         # package_dict_api holds list of all service urls which come under /api
         # package_dict_deprecated holds a list of all service urls which come under /rest, but are
@@ -86,26 +87,28 @@ def main():
     api = ApiUrlProcessing()
 
     threads = []
-    for package, service_urls in six.iteritems(package_dict_deprecated):
-        worker = threading.Thread(
-            target=rest.process_service_urls,
-            args=(
-                package,
-                service_urls,
-                output_dir,
-                structure_dict,
-                enumeration_dict,
-                service_dict,
-                service_urls_map,
-                http_error_map,
-                rest_navigation_url,
-                enable_filtering,
-                SPECIFICATION,
-                GENERATE_UNIQUE_OP_IDS,
-                deprecation_handler))
-        worker.daemon = True
-        worker.start()
-        threads.append(worker)
+
+    if MIXED:
+        for package, service_urls in six.iteritems(package_dict_deprecated):
+            worker = threading.Thread(
+                target=rest.process_service_urls,
+                args=(
+                    package,
+                    service_urls,
+                    output_dir,
+                    structure_dict,
+                    enumeration_dict,
+                    service_dict,
+                    service_urls_map,
+                    http_error_map,
+                    rest_navigation_url,
+                    enable_filtering,
+                    SPECIFICATION,
+                    GENERATE_UNIQUE_OP_IDS,
+                    deprecation_handler))
+            worker.daemon = True
+            worker.start()
+            threads.append(worker)
 
     for package, service_urls in six.iteritems(package_dict):
         worker = threading.Thread(

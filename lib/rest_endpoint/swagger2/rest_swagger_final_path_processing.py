@@ -15,7 +15,8 @@ class RestSwaggerPathProcessing(PathProcessing):
             type_dict,
             output_dir,
             output_filename,
-            gen_unique_op_id):
+            gen_unique_op_id,
+            deprecated=False):
         description_map = utils.load_description()
         self.remove_com_vmware_from_dict(path_dict)
         if gen_unique_op_id:
@@ -49,10 +50,14 @@ class RestSwaggerPathProcessing(PathProcessing):
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
 
+        file_prefix = '/rest'
+        if deprecated:
+            file_prefix = '/rest-deprecated'
+
         utils.write_json_data_to_file(
             output_dir +
             os.path.sep +
-            '/rest' +
+            file_prefix +
             "_" +
             utils.remove_curly_braces(output_filename) +
             '.json',
