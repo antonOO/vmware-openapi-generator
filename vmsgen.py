@@ -20,6 +20,7 @@ import requests
 import six
 
 from lib.rest_endpoint.deprecation_handler import DeprecationHandler
+from lib.rest_endpoint.rest_navigation_handler import RestNavigationHandler
 
 warnings.filterwarnings("ignore")
 
@@ -43,6 +44,8 @@ def main():
     service_dict = {}
     # Maps service url to service id
     service_urls_map = {}
+
+    rest_navigation_handler = RestNavigationHandler(rest_navigation_url)
 
     start = timeit.default_timer()
     print('Trying to connect ' + metadata_api_url)
@@ -75,13 +78,13 @@ def main():
         # deprecated with /api
         # replacement_map contains information about the deprecated /rest to /api mappings
         package_dict_api, package_dict, package_dict_deprecated, replacement_map = dict_processing.add_service_urls_using_metamodel(
-            service_urls_map, service_dict, rest_navigation_url, MIXED)
+            service_urls_map, service_dict, rest_navigation_handler, MIXED)
 
         deprecation_handler = DeprecationHandler(replacement_map)
     else:
         # package_dict_api holds list of all service urls which come under /api
         package_dict_api, package_dict = dict_processing.add_service_urls_using_metamodel(
-            service_urls_map, service_dict, rest_navigation_url, MIXED)
+            service_urls_map, service_dict, rest_navigation_handler, MIXED)
 
     rest = RestUrlProcessing()
     api = ApiUrlProcessing()

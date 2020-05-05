@@ -6,6 +6,7 @@ from lib import establish_connection as connection
 from lib import dictionary_processing as dict_processing
 from lib.dictionary_processing import ServiceType
 from lib.path_processing import PathProcessing
+from lib.rest_endpoint.rest_navigation_handler import RestNavigationHandler
 from lib.url_processing import UrlProcessing
 from lib.type_handler_common import TypeHandlerCommon
 
@@ -195,6 +196,7 @@ class TestDictionaryProcessing(unittest.TestCase):
         #case 1: checking for package_dict_api{}
         service_urls_map = { 'https://vcip/rest/com/vmware/package/mock' : 'com.vmware.package.mock'}
         rest_navigation_url = 'https://vcip/rest'
+        rest_navigation_handler = RestNavigationHandler(rest_navigation_url)
         element_value_mock = mock.Mock()
         element_value_mock.string_value = '/package/mock'
         element_info_mock = mock.Mock()
@@ -213,7 +215,7 @@ class TestDictionaryProcessing(unittest.TestCase):
             'com.vmware.package.mock': service_info_mock
         }
         package_dict_api_expected = { 'package': ['/package/mock'] }
-        package_dict_api_actual, _, = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_url)
+        package_dict_api_actual, _, = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_handler)
         self.assertEqual(package_dict_api_expected, package_dict_api_actual)
        
         #case 2: checking for package_dict{}
@@ -223,7 +225,7 @@ class TestDictionaryProcessing(unittest.TestCase):
                             'mock_element_key' : element_info_mock
                             }
         package_dict_expected = {'package': ['/vmware/com/package/mock']}
-        _, package_dict_actual = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_url)
+        _, package_dict_actual = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_handler)
         self.assertEqual(package_dict_expected, package_dict_actual)
 
 

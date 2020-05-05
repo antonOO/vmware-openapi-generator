@@ -6,6 +6,9 @@ from six.moves import http_client
 from lib import utils
 from enum import Enum
 
+from lib.rest_endpoint.rest_navigation_handler import RestNavigationHandler
+
+
 class ServiceType:
     REST = 1
     API = 2
@@ -101,7 +104,7 @@ def get_all_services_urls(components_urls, verify):
 def add_service_urls_using_metamodel(
         service_urls_map,
         service_dict,
-        rest_navigation_url,
+        rest_navigation_handler: RestNavigationHandler,
         mixed=False):
 
     package_dict_api = {}
@@ -121,7 +124,7 @@ def add_service_urls_using_metamodel(
         })
 
     for service in service_dict:
-        service_type, path_list = get_paths_inside_metamodel(service, service_dict, mixed, replacement_map)
+        service_type, path_list = get_paths_inside_metamodel(service, service_dict, mixed, replacement_map, rest_services.get(service, None), rest_navigation_handler)
         if service_type == ServiceType.API or service_type == ServiceType.MIXED:
             for path in path_list:
                 service_urls_map[path] = (service, '/api')
@@ -134,7 +137,7 @@ def add_service_urls_using_metamodel(
             service_url = rest_services.get(service, None)
             if service_url is not None:
                 service_path = get_service_path_from_service_url(
-                    service_url, rest_navigation_url)
+                    service_url, rest_navigation_handler.get_rest_navigation_url())
                 service_urls_map[service_path] = (service, '/rest')
                 package = service_path.split('/')[3]
                 if package in package_dict:
@@ -148,7 +151,7 @@ def add_service_urls_using_metamodel(
             service_url = rest_services.get(service, None)
             if service_url is not None:
                 service_path = get_service_path_from_service_url(
-                    service_url, rest_navigation_url)
+                    service_url, rest_navigation_handler.get_rest_navigation_url())
                 service_urls_map[service_path] = (service, '/mixed')
                 package = service_path.split('/')[3]
                 if package in package_dict_deprecated:
@@ -165,7 +168,7 @@ def add_service_urls_using_metamodel(
 
 
 
-def get_paths_inside_metamodel(service, service_dict, mixed=False, replacement_map={}):
+def get_paths_inside_metamodel(service, service_dict, mixed=False, replacement_map={}, service_url=None, rest_navigation_handler=None):
     path_list = set()
     is_mixed = False
     for operation_id in service_dict[service].operations.keys():
@@ -179,6 +182,12 @@ def get_paths_inside_metamodel(service, service_dict, mixed=False, replacement_m
                 if mixed and 'RequestMapping' in service_dict[service].operations[operation_id].metadata.keys():
                     is_mixed = True
                     add_replcament_path(service, operation_id, request.lower(), path, replacement_map)
+                elif mixed and service_url is not None and rest_navigation_handler is not None:
+                    # Check whether the service is apparent in the rest navigation - has 6.0
+                    service_operations = rest_navigation_handler.get_service_operations(service_url)
+                    if service_operations is not None:
+                        is_mixed = True
+                        add_replcament_path(service, operation_id, request.lower(), path, replacement_map)
 
     if path_list == set():
         return ServiceType.REST, []

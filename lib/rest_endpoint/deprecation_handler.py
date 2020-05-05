@@ -22,7 +22,6 @@ class DeprecationHandler:
             if method_map is not None and "method" in path_obj:
                 # get concrete path and format accordingly
                 replacement_path = method_map.get(path_obj["method"])
-                replacement_path = replacement_path.replace("/", "", 1)
                 replacement_path = replacement_path.replace("/", "~1")
                 replacement_path = api_file_name + "#/paths/" + replacement_path + "/" + path_obj["method"]
 
