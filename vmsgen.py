@@ -80,6 +80,14 @@ def main():
         package_dict_api, package_dict, package_dict_deprecated, replacement_map = dict_processing.add_service_urls_using_metamodel(
             service_urls_map, service_dict, rest_navigation_handler, MIXED)
 
+        for k, v in package_dict_deprecated.items():
+            services = package_dict.get(k, None)
+            if services is None:
+                package_dict[k] = v
+            else:
+                services.extend(v)
+                package_dict[k] = list(set(services))
+
         deprecation_handler = DeprecationHandler(replacement_map)
     else:
         # package_dict_api holds list of all service urls which come under /api
@@ -90,29 +98,6 @@ def main():
     api = ApiUrlProcessing()
 
     threads = []
-
-    if MIXED:
-        for package, service_urls in six.iteritems(package_dict_deprecated):
-            worker = threading.Thread(
-                target=rest.process_service_urls,
-                args=(
-                    package,
-                    service_urls,
-                    output_dir,
-                    structure_dict,
-                    enumeration_dict,
-                    service_dict,
-                    service_urls_map,
-                    http_error_map,
-                    rest_navigation_url,
-                    enable_filtering,
-                    SPECIFICATION,
-                    GENERATE_UNIQUE_OP_IDS,
-                    deprecation_handler))
-            worker.daemon = True
-            worker.start()
-            threads.append(worker)
-
     for package, service_urls in six.iteritems(package_dict):
         worker = threading.Thread(
             target=rest.process_service_urls,
@@ -128,7 +113,8 @@ def main():
                 rest_navigation_url,
                 enable_filtering,
                 SPECIFICATION,
-                GENERATE_UNIQUE_OP_IDS))
+                GENERATE_UNIQUE_OP_IDS,
+                deprecation_handler))
         worker.daemon = True
         worker.start()
         threads.append(worker)

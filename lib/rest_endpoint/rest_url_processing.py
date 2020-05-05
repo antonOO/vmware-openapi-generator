@@ -82,9 +82,8 @@ class RestUrlProcessing(UrlProcessing):
                             http_error_map,
                             enable_filtering)
 
-                    if deprecation_handler is not None:
+                    if deprecation_handler is not None and service_end_point == "/mixed":
                         deprecation_handler.add_deprecation_information(path, package_name, service_name)
-                        deprecated = True
                     path_list.append(path)
                 continue
             # use rest navigation service to get the REST mappings for a
@@ -145,6 +144,8 @@ class RestUrlProcessing(UrlProcessing):
                         http_error_map,
                         enable_filtering)
 
+                if deprecation_handler is not None and service_end_point == "/mixed":
+                    deprecation_handler.add_deprecation_information(path, package_name, service_name)
                 path_list.append(path)
         path_dict = self.convert_path_list_to_path_map(path_list)
         self.cleanup(path_dict=path_dict, type_dict=type_dict)
@@ -154,16 +155,14 @@ class RestUrlProcessing(UrlProcessing):
                 type_dict,
                 output_dir,
                 package_name,
-                gen_unique_op_id,
-                deprecated)
+                gen_unique_op_id)
         if spec == '3':
             rest_openapi_fpp.process_output(
                 path_dict,
                 type_dict,
                 output_dir,
                 package_name,
-                gen_unique_op_id,
-                deprecated)
+                gen_unique_op_id)
 
     def contains_rm_annotation(self, service_info):
         for operation in service_info.operations.values():
