@@ -28,7 +28,6 @@ class ApiUrlProcessing(UrlProcessing):
             service_dict,
             service_url_dict,
             http_error_map,
-            rest_navigation_url,
             enable_filtering,
             spec,
             gen_unique_op_id):

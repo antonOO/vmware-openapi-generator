@@ -110,7 +110,7 @@ def main():
                 service_dict,
                 service_urls_map,
                 http_error_map,
-                rest_navigation_url,
+                rest_navigation_handler,
                 enable_filtering,
                 SPECIFICATION,
                 GENERATE_UNIQUE_OP_IDS,
@@ -131,7 +131,6 @@ def main():
                 service_dict,
                 service_urls_map,
                 http_error_map,
-                rest_navigation_url,
                 enable_filtering,
                 SPECIFICATION,
                 GENERATE_UNIQUE_OP_IDS))

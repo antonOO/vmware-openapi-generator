@@ -28,7 +28,7 @@ class RestUrlProcessing(UrlProcessing):
             service_dict,
             service_url_dict,
             http_error_map,
-            rest_navigation_url,
+            rest_navigation_handler,
             enable_filtering,
             spec,
             gen_unique_op_id,
@@ -37,8 +37,6 @@ class RestUrlProcessing(UrlProcessing):
         print('processing package ' + package_name + os.linesep)
         type_dict = {}
         path_list = []
-        # File naming switch
-        deprecated = False
 
         for service_url in service_urls:
             service_name, service_end_point = service_url_dict.get(
@@ -88,8 +86,7 @@ class RestUrlProcessing(UrlProcessing):
                 continue
             # use rest navigation service to get the REST mappings for a
             # service.
-            service_operations = utils.get_json(
-                rest_navigation_url + service_url + '?~method=OPTIONS', False)
+            service_operations = rest_navigation_handler.get_service_operations(service_url)
             if service_operations is None:
                 continue
 
@@ -116,7 +113,7 @@ class RestUrlProcessing(UrlProcessing):
                     continue
                 url, method = self.find_url(service_operation['links'])
                 url = self.get_service_path_from_service_url(
-                    url, rest_navigation_url)
+                    url, rest_navigation_handler.get_rest_navigation_url())
                 operation_info = service_info.operations.get(operation_id)
 
                 if spec == '2':
