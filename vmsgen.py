@@ -19,7 +19,7 @@ import warnings
 import requests
 import six
 
-from lib.rest_endpoint.deprecation_handler import DeprecationHandler
+from lib.rest_endpoint.rest_deprecation_handler import RestDeprecationHandler
 from lib.rest_endpoint.rest_navigation_handler import RestNavigationHandler
 
 warnings.filterwarnings("ignore")
@@ -88,7 +88,7 @@ def main():
                 services.extend(v)
                 package_dict[k] = list(set(services))
 
-        deprecation_handler = DeprecationHandler(replacement_map)
+        deprecation_handler = RestDeprecationHandler(replacement_map)
     else:
         # package_dict_api holds list of all service urls which come under /api
         package_dict_api, package_dict = dict_processing.add_service_urls_using_metamodel(

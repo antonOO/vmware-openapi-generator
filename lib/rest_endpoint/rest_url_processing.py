@@ -2,7 +2,7 @@ import os
 import six
 from lib import utils
 from lib.url_processing import UrlProcessing
-from . import deprecation_handler
+from . import rest_deprecation_handler
 from .oas3.rest_metamodel2openapi import RestMetamodel2Openapi
 from .swagger2.rest_metamodel2swagger import RestMetamodel2Swagger
 from .oas3.rest_openapi_final_path_processing import RestOpenapiPathProcessing

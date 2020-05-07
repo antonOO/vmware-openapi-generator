@@ -1,4 +1,4 @@
-class DeprecationHandler:
+class RestDeprecationHandler:
 
     def __init__(self, replacement_map):
         '''
