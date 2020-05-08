@@ -80,13 +80,7 @@ def main():
         package_dict_api, package_dict, package_dict_deprecated, replacement_map = dict_processing.add_service_urls_using_metamodel(
             service_urls_map, service_dict, rest_navigation_handler, MIXED)
 
-        for k, v in package_dict_deprecated.items():
-            services = package_dict.get(k, None)
-            if services is None:
-                package_dict[k] = v
-            else:
-                services.extend(v)
-                package_dict[k] = list(set(services))
+        utils.combine_dicts_with_list_values(package_dict, package_dict_deprecated)
 
         deprecation_handler = RestDeprecationHandler(replacement_map)
     else:
