@@ -1,5 +1,5 @@
 import unittest
-from unittest import mock 
+from unittest import mock
 import vmsgen
 from lib import utils
 from lib import establish_connection as connection
@@ -147,10 +147,9 @@ class TestDictionaryProcessing(unittest.TestCase):
                 })
             }
         '''
-        bool_value_expected = False
         path_list_expected = []
-        bool_value_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict)
-        self.assertEqual(ServiceType.REST, bool_value_actual)
+        service_type_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict)
+        self.assertEqual(ServiceType.REST, service_type_actual)
         self.assertEqual(path_list_expected, path_list_actual)
 
         #case 2: https methods ('put', 'post', 'patch', 'get', 'delete') in metadata.keys
@@ -184,13 +183,136 @@ class TestDictionaryProcessing(unittest.TestCase):
                 })
             }
         '''
-        bool_value_expected = True
         path_list_expected = ['mock_string_value']
-        bool_value_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict)
-        self.assertEqual(ServiceType.API, bool_value_actual)
+        service_type_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict)
+        self.assertEqual(ServiceType.API, service_type_actual)
         self.assertEqual(path_list_expected, path_list_actual)
 
-        #TODO add tests for ServiceType.MIXED
+        # case 3: https methods ('put', 'post', 'patch', 'get', 'delete') in metadata.keys with mixed applied
+        element_value_mock = mock.Mock()
+        element_value_mock.string_value = 'mock_string_value'
+        element_info_mock = mock.Mock()
+        element_info_mock.elements = {
+            'path': element_value_mock
+        }
+        operation_info_mock.metadata = {
+            'put': element_info_mock
+        }
+        service_info_mock.operations = {
+            'mock-key-1': operation_info_mock
+        }
+        service = 'com.vmware.package-mock-1.mock.mock'
+        service_dict = {
+            'com.vmware.package-mock-1.mock.mock': service_info_mock
+        }
+        '''
+        Structure of key-value pair in service_dict
+        service_dict = {
+            'com.vmware.package-mock-1.mock.mock':  
+                ServiceInfo(
+                operations = {
+                    'mock-key-1': OperationInfo(metadata = {
+                                        'put' : ElementInfo(elemets = {
+                                            'path' : ElementValue(string_value = 'mock_string_value')
+                                        })
+                    })
+                })
+            }
+        '''
+        path_list_expected = ['mock_string_value']
+        service_type_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict, True)
+        self.assertEqual(ServiceType.API, service_type_actual)
+        self.assertEqual(path_list_expected, path_list_actual)
+
+        # case 3.1: https methods ('put', 'post', 'patch', 'get', 'delete') in metadata.keys with mixed applied
+        # and RequestMapping apparent in the metadata
+        element_value_mock = mock.Mock()
+        element_value_mock.string_value = 'mock_string_value'
+        element_info_mock = mock.Mock()
+        element_info_mock.elements = {
+            'path': element_value_mock
+        }
+        operation_info_mock.metadata = {
+            'put': element_info_mock,
+            'RequestMapping': {}
+        }
+        service_info_mock.operations = {
+            'mock-key-1': operation_info_mock
+        }
+        service = 'com.vmware.package-mock-1.mock.mock'
+        service_dict = {
+            'com.vmware.package-mock-1.mock.mock': service_info_mock
+        }
+        '''
+        Structure of key-value pair in service_dict
+        service_dict = {
+            'com.vmware.package-mock-1.mock.mock':  
+                ServiceInfo(
+                operations = {
+                    'mock-key-1': OperationInfo(metadata = {
+                                        'put' : ElementInfo(elemets = {
+                                            'path' : ElementValue(string_value = 'mock_string_value')
+                                        }),
+                                        'RequestMapping' : {})
+                    })
+                })
+            }
+        '''
+        path_list_expected = ['mock_string_value']
+        replacement_map_expected = {service: {"mock-key-1": {"put": "mock_string_value"}}}
+        replacement_map_actual = {}
+        service_type_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service, service_dict, True, replacement_map_actual)
+        self.assertEqual(ServiceType.MIXED, service_type_actual)
+        self.assertEqual(path_list_expected, path_list_actual)
+        self.assertEqual(replacement_map_expected, replacement_map_actual)
+
+        # case 3.2: https methods ('put', 'post', 'patch', 'get', 'delete') in metadata.keys with mixed applied
+        # and apparent in navigation service
+        rest_navigation_handler = RestNavigationHandler("")
+        rest_navigation_handler.get_service_operations = mock.MagicMock(return_value={})
+        element_value_mock = mock.Mock()
+        element_value_mock.string_value = 'mock_string_value'
+        element_info_mock = mock.Mock()
+        element_info_mock.elements = {
+            'path': element_value_mock
+        }
+        operation_info_mock.metadata = {
+            'put': element_info_mock,
+        }
+        service_info_mock.operations = {
+            'mock-key-1': operation_info_mock
+        }
+        service = 'com.vmware.package-mock-1.mock.mock'
+        service_dict = {
+            'com.vmware.package-mock-1.mock.mock': service_info_mock
+        }
+        '''
+        Structure of key-value pair in service_dict
+        service_dict = {
+            'com.vmware.package-mock-1.mock.mock':  
+                ServiceInfo(
+                operations = {
+                    'mock-key-1': OperationInfo(metadata = {
+                                        'put' : ElementInfo(elemets = {
+                                            'path' : ElementValue(string_value = 'mock_string_value')
+                                        }))
+                    })
+                })
+            }
+        '''
+        path_list_expected = ['mock_string_value']
+        replacement_map_expected = {service: {"mock-key-1": {"put": "mock_string_value"}}}
+        replacement_map_actual = {}
+        service_type_actual, path_list_actual = dict_processing.get_paths_inside_metamodel(service,
+                                                                                           service_dict,
+                                                                                           True,
+                                                                                           replacement_map_actual,
+                                                                                           "sample_service_url",
+                                                                                           rest_navigation_handler)
+        self.assertEqual(ServiceType.MIXED, service_type_actual)
+        self.assertEqual(path_list_expected, path_list_actual)
+        self.assertEqual(replacement_map_expected, replacement_map_actual)
+
 
     def test_add_service_urls_using_metamodel(self):
         #case 1: checking for package_dict_api{}
