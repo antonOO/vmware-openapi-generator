@@ -319,6 +319,7 @@ class TestDictionaryProcessing(unittest.TestCase):
         service_urls_map = { 'https://vcip/rest/com/vmware/package/mock' : 'com.vmware.package.mock'}
         rest_navigation_url = 'https://vcip/rest'
         rest_navigation_handler = RestNavigationHandler(rest_navigation_url)
+        rest_navigation_handler.get_service_operations = mock.MagicMock(return_value={})
         element_value_mock = mock.Mock()
         element_value_mock.string_value = '/package/mock'
         element_info_mock = mock.Mock()
@@ -349,6 +350,20 @@ class TestDictionaryProcessing(unittest.TestCase):
         package_dict_expected = {'package': ['/vmware/com/package/mock']}
         _, package_dict_actual = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_handler)
         self.assertEqual(package_dict_expected, package_dict_actual)
+
+        #case 3: checking for package_dict_deprecated{}
+        service_urls_map = { 'https://vcip/rest/vmware/com/package/mock' : 'com.vmware.package.mock'}
+        element_value_mock.string_value = '/package/mock'
+        operation_info_mock.metadata = {
+                            'put' : element_info_mock,
+                            'RequestMapping': {}
+                            }
+        package_dict_deprecated_expected = {'package': ['/vmware/com/package/mock']}
+        package_dict_api_expected = {'package': ['/package/mock']}
+        package_dict_api_actual, package_dict_actual, package_dict_deprecated_actual, _, = dict_processing.add_service_urls_using_metamodel(service_urls_map,service_dict,rest_navigation_handler, True)
+
+        self.assertEqual(package_dict_deprecated_expected, package_dict_deprecated_actual)
+        self.assertEqual(package_dict_api_expected, package_dict_api_actual)
 
 
 
